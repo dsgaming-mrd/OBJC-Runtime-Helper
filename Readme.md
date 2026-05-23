@@ -391,8 +391,8 @@ Replace the runtime implementation (`IMP`) of an instance method with a custom h
 
 ### ⚠️ Critical Rule for Hooks
 Every Objective-C method natively carries **two hidden arguments** at the beginning of its signature:
-- `id self` — The pointer to the calling object instance.
-- `SEL _cmd` — The selector of the current method.
+- `id self` - The pointer to the calling object instance.
+- `SEL _cmd` - The selector of the current method.
 
 Your custom hook function signature **must** include these two hidden arguments before any explicit parameters.
 
@@ -430,8 +430,8 @@ Replace the runtime implementation (`IMP`) of a static class method by routing s
 
 ### ⚠️ Critical Rule for Hooks
 Just like instance methods, class method hooks **must** include the two hidden arguments, but the first argument is the class structure rather than an object instance:
-- `Class self` — The pointer to the structural Class object.
-- `SEL _cmd` — The selector of the current method.
+- `Class self` - The pointer to the structural Class object.
+- `SEL _cmd` - The selector of the current method.
 
 ### Syntax
 ```cpp
