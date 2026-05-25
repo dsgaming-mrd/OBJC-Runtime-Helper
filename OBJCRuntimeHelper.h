@@ -8,6 +8,8 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 
+#include <mach-o/dyld.h>
+#include <mach-o/dyld_images.h>
 #include <stdint.h>
 #include <dlfcn.h>
 
