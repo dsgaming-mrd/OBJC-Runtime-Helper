@@ -91,36 +91,46 @@ namespace OBJCRuntime {
 
     template<typename T>
     static inline T GetIvar(void *obj, const char *clsName, const char *ivarName) {
-        if (!RuntimeHelper::IsObject(obj) || !clsName || !ivarName) return (T)0;
+        if (!RuntimeHelper::IsObject(obj) || !clsName || !ivarName)
+            return T();
 
         uintptr_t off = GetIvarOffset(clsName, ivarName);
-        if (!off) return (T)0;
 
-        return *(T *)((uintptr_t)obj + off);
+        if (!off)
+            return T();
+
+        return *reinterpret_cast<T *>((uintptr_t)obj + off);
     }
 
     template<typename T>
     static inline void SetIvar(void *obj, const char *clsName, const char *ivarName, T value) {
-        if (!RuntimeHelper::IsObject(obj) || !clsName || !ivarName) return;
+
+        if (!RuntimeHelper::IsObject(obj) || !clsName || !ivarName)
+            return;
 
         uintptr_t off = GetIvarOffset(clsName, ivarName);
-        if (!off) return;
 
-        *(T *)((uintptr_t)obj + off) = value;
+        if (!off)
+            return;
+
+        *reinterpret_cast<T *>((uintptr_t)obj + off) = value;
     }
 
     template<typename T, typename... Args>
     static inline T GetInstanceMethod(void *obj, const char *clsName, const char *selName, Args... args) {
-        if (!RuntimeHelper::IsObject(obj) || !clsName || !selName) return (T)0;
+
+        if (!RuntimeHelper::IsObject(obj) || !clsName || !selName)
+            return T{};
 
         Class cls = RuntimeHelper::GetClass(clsName);
-        if (!cls) return (T)0;
+        if (!cls)
+            return T{};
 
         id target = (__bridge id)obj;
         SEL sel = RuntimeHelper::GetSelector(selName);
 
         if (!sel || ![target respondsToSelector:sel])
-            return (T)0;
+            return T{};
 
         using MsgSend = T (*)(id, SEL, Args...);
         return ((MsgSend)objc_msgSend)(target, sel, args...);
@@ -128,15 +138,18 @@ namespace OBJCRuntime {
 
     template<typename T, typename... Args>
     static inline T GetClassMethod(const char *clsName, const char *selName, Args... args) {
-        if (!clsName || !selName) return (T)0;
+
+        if (!clsName || !selName)
+            return T{};
 
         Class cls = RuntimeHelper::GetClass(clsName);
-        if (!cls) return (T)0;
+        if (!cls)
+            return T{};
 
         SEL sel = RuntimeHelper::GetSelector(selName);
 
         if (!sel || ![cls respondsToSelector:sel])
-            return (T)0;
+            return T{};
 
         using MsgSend = T (*)(id, SEL, Args...);
         return ((MsgSend)objc_msgSend)((id)cls, sel, args...);
