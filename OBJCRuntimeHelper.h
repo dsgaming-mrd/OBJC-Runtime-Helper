@@ -122,7 +122,7 @@ namespace OBJCRuntime {
         if (!sel || ![target respondsToSelector:sel])
             return (T)0;
 
-        using MsgSend = T (*)(id, SEL, ...);
+        using MsgSend = T (*)(id, SEL, Args...);
         return ((MsgSend)objc_msgSend)(target, sel, args...);
     }
 
@@ -138,7 +138,7 @@ namespace OBJCRuntime {
         if (!sel || ![cls respondsToSelector:sel])
             return (T)0;
 
-        using MsgSend = T (*)(id, SEL, ...);
+        using MsgSend = T (*)(id, SEL, Args...);
         return ((MsgSend)objc_msgSend)((id)cls, sel, args...);
     }
 
