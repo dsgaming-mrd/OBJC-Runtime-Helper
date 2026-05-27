@@ -1,5 +1,5 @@
 //
-// Created by DS Gaming - Mr D on 23/05/2026.
+// Created by DS Gaming - Mr D on 28/05/2026.
 //
 
 #pragma once
@@ -12,6 +12,7 @@
 #include <mach-o/dyld_images.h>
 #include <stdint.h>
 #include <dlfcn.h>
+#include <type_traits>
 
 namespace RuntimeHelper {
     static inline Class GetClass(const char *name) {
@@ -119,40 +120,78 @@ namespace OBJCRuntime {
     template<typename T, typename... Args>
     static inline T GetInstanceMethod(void *obj, const char *clsName, const char *selName, Args... args) {
 
-        if (!RuntimeHelper::IsObject(obj) || !clsName || !selName)
-            return T{};
+        if (!RuntimeHelper::IsObject(obj) || !clsName || !selName) {
+            if constexpr (std::is_void<T>::value)
+                return;
+            else
+                return T{};
+        }
 
         Class cls = RuntimeHelper::GetClass(clsName);
-        if (!cls)
-            return T{};
+
+        if (!cls) {
+            if constexpr (std::is_void<T>::value)
+                return;
+            else
+                return T{};
+        }
 
         id target = (__bridge id)obj;
         SEL sel = RuntimeHelper::GetSelector(selName);
 
-        if (!sel || ![target respondsToSelector:sel])
-            return T{};
+        if (!sel || ![target respondsToSelector:sel]) {
+            if constexpr (std::is_void<T>::value)
+                return;
+            else
+                return T{};
+        }
 
         using MsgSend = T (*)(id, SEL, Args...);
-        return ((MsgSend)objc_msgSend)(target, sel, args...);
+
+        if constexpr (std::is_void<T>::value) {
+            ((MsgSend)objc_msgSend)(target, sel, args...);
+            return;
+        } else {
+            return ((MsgSend)objc_msgSend)(target, sel, args...);
+        }
     }
 
     template<typename T, typename... Args>
     static inline T GetClassMethod(const char *clsName, const char *selName, Args... args) {
 
-        if (!clsName || !selName)
-            return T{};
+        if (!clsName || !selName) {
+            if constexpr (std::is_void<T>::value)
+                return;
+            else
+                return T{};
+        }
 
         Class cls = RuntimeHelper::GetClass(clsName);
-        if (!cls)
-            return T{};
+
+        if (!cls) {
+            if constexpr (std::is_void<T>::value)
+                return;
+            else
+                return T{};
+        }
 
         SEL sel = RuntimeHelper::GetSelector(selName);
 
-        if (!sel || ![cls respondsToSelector:sel])
-            return T{};
+        if (!sel || ![cls respondsToSelector:sel]) {
+            if constexpr (std::is_void<T>::value)
+                return;
+            else
+                return T{};
+        }
 
         using MsgSend = T (*)(id, SEL, Args...);
-        return ((MsgSend)objc_msgSend)((id)cls, sel, args...);
+
+        if constexpr (std::is_void<T>::value) {
+            ((MsgSend)objc_msgSend)((id)cls, sel, args...);
+            return;
+        } else {
+            return ((MsgSend)objc_msgSend)((id)cls, sel, args...);
+        }
     }
 
     static inline uintptr_t GetInstanceMethodRealAddress(const char *clsName, const char *selName) {
